@@ -1,0 +1,24 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+VAGRANTFILE_API_VERSION = "2"
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  # VirtualBox
+  config.vm.network :forwarded_port, guest: 9200, host: 9200
+
+  config.omnibus.chef_version = "12.10.24"
+
+  config.vm.provider :virtualbox do |virtualbox, override|
+    override.vm.box = "bento/centos-6.7"
+    virtualbox.customize ["modifyvm", :id, "--memory", "2048"]
+  end
+
+  config.vm.provision :chef_solo do |chef|
+    chef.cookbooks_path = ["cookbooks", "site-cookbooks"]
+    chef.add_recipe "yum"
+    chef.add_recipe "java"
+    chef.add_recipe "elasticsearch"
+    chef.add_recipe "kibana"
+  end
+end
