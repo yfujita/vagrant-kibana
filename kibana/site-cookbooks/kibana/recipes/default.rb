@@ -1,28 +1,28 @@
-file_name="kibana-3.1.2"
-remote_uri="https://download.elastic.co/kibana/kibana/#{file_name}.zip"
+#
+# Cookbook Name:: monit-rpm
+# Recipe:: default
+#
+# Copyright 2015, YOUR_COMPANY_NAME
+#
+# All rights reserved - Do Not Redistribute
+#
+
+RPM_FILE='kibana-4.5.1-1.x86_64.rpm'
+RPM_FILE_PATH="/tmp/#{RPM_FILE}"
+RPM_URL="https://download.elastic.co/kibana/kibana/#{RPM_FILE}"
 
 
-yum_package 'unzip' do
-  action  :install
-end
-
-bash "install_kibana" do
-  only_if { !File.exists?('/user/share/elasticsearch/plugins/kibana') }
+bash 'kibana install' do
   user "root"
   cwd "/tmp"
-  code <<-EOH
-  wget #{remote_uri}
-  mkdir -p /usr/share/elasticsearch/plugins/kibana/_site
-  unzip /tmp/#{file_name}.zip
-  cp -rf /tmp/#{file_name}/* /usr/share/elasticsearch/plugins/kibana/_site
-  EOH
+  code <<-EOC
+  wget #{RPM_URL}
+  rpm -ivh #{RPM_FILE_PATH}
+  EOC
+  notifies :restart, 'service[kibana]'
 end
 
-bash "install_kopf" do
-  only_if { !File.exists?('/user/share/elasticsearch/plugins/kopf') }
-  user "root"
-  cwd "/tmp"
-  code <<-EOH
-  /usr/share/elasticsearch/bin/plugin -install lmenezes/elasticsearch-kopf/v1.4.9
-  EOH
+service "kibana" do
+  action [:enable]
+  supports :start => true, :status => true, :restart => true
 end

@@ -1,7 +1,6 @@
-es_version = "2.3.0"
+es_version = "2.3.2"
 filename = "elasticsearch-#{es_version}.rpm"
-# remote_uri = "https://download.elasticsearch.org/elasticsearch/release/org/elasticsearch/distribution/rpm/elasticsearch/#{es_version}/#{filename}"
-remote_uri = "https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-1.4.1.noarch.rpm"
+remote_uri = "https://download.elasticsearch.org/elasticsearch/release/org/elasticsearch/distribution/rpm/elasticsearch/#{es_version}/#{filename}"
 
 service "elasticsearch" do
     supports :status => true, :restart => true, :reload => true
@@ -42,4 +41,13 @@ bash "update_es_yml" do
   touch /tmp/yml_updated
   EOH
   notifies :restart, resources(:service => "elasticsearch")
+end
+
+bash "install_kopf" do
+  only_if { !File.exists?('/user/share/elasticsearch/plugins/kopf') }
+  user "root"
+  cwd "/tmp"
+  code <<-EOH
+  /usr/share/elasticsearch/bin/plugin install lmenezes/elasticsearch-kopf/master
+  EOH
 end
